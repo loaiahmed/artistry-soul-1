@@ -62,7 +62,7 @@ const Gallery = () => {
             <p className="text-center text-muted-foreground py-20">Loading paintings...</p>
           ) : error ? (
             <p className="text-center text-destructive py-20">
-              Failed to load paintings. Make sure Strapi is running.
+              {error}
             </p>
           ) : paintings.length === 0 ? (
             <p className="text-center text-muted-foreground py-20">
