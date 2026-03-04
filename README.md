@@ -1,4 +1,4 @@
-<img width="1456" height="127" alt="image" src="https://github.com/user-attachments/assets/59493606-38d1-4cb8-9cc2-132fda00b4d5" /># Artistry Soul
+# Artistry Soul
 
 ## Project info
 
