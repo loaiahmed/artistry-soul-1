@@ -8,8 +8,8 @@ const STRAPI_BASE = import.meta.env.VITE_STRAPI_URL ?? "http://localhost:1337";
 const Gallery = () => {
   const [paintings, setPaintings] = useState<Painting[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
-
+  // const [error, setError] = useState(false);
+  const [error, setError] = useState<string | false>(false);
   useEffect(() => {
     const fetchPaintings = async () => {
       try {
@@ -17,7 +17,8 @@ const Gallery = () => {
 
         if (!res.ok) {
           console.error("Strapi fetch failed:", res.status, res.statusText);
-          setError(true);
+          // setError(true);
+          setError(String(res.ok));
           return;
         }
 
@@ -25,7 +26,8 @@ const Gallery = () => {
         setPaintings(json.data ?? []);
       } catch (err) {
         console.error("Error fetching paintings from Strapi:", err);
-        setError(true);
+        // setError(true);
+        setError(String(err));
       } finally {
         setLoading(false);
       }
