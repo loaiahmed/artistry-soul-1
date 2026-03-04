@@ -1,26 +1,25 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { Painting, SAMPLE_PAINTINGS } from "@/types/painting";
+import { Painting } from "@/types/painting";
 import { Button } from "@/components/ui/button";
+
+const STRAPI_BASE = import.meta.env.VITE_STRAPI_URL ?? "http://localhost:1337";
 
 interface SlideshowProps {
   paintings?: Painting[];
   interval?: number;
 }
 
-const Slideshow = ({
-  paintings = SAMPLE_PAINTINGS.slice(0, 4),
-  interval = 4000,
-}: SlideshowProps) => {
+const Slideshow = ({ paintings = [], interval = 4000 }: SlideshowProps) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
 
   useEffect(() => {
-    if (isHovered) return;
+    if (isHovered || paintings.length === 0) return;
 
     const timer = setInterval(() => {
-      setCurrentIndex((prevIndex) => (prevIndex + 1) % paintings.length);
+      setCurrentIndex((prev) => (prev + 1) % paintings.length);
     }, interval);
 
     return () => clearInterval(timer);
@@ -35,6 +34,10 @@ const Slideshow = ({
   }
 
   const currentPainting = paintings[currentIndex];
+
+  const imageUrl = currentPainting.Image.url.startsWith("http")
+    ? currentPainting.Image.url
+    : `${STRAPI_BASE}${currentPainting.Image.url}`;
 
   const goToPrevious = () => {
     setCurrentIndex((prev) => (prev === 0 ? paintings.length - 1 : prev - 1));
@@ -55,7 +58,7 @@ const Slideshow = ({
         <Link to={`/gallery/${currentPainting.Slug}`}>
           <div className="relative aspect-[16/10] overflow-hidden">
             <img
-              src={currentPainting.Image.url}
+              src={imageUrl}
               alt={currentPainting.Title}
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
             />

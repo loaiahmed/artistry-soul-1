@@ -1,16 +1,62 @@
 import { useParams, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 import { ArrowLeft, Calendar, Maximize2 } from "lucide-react";
 import Layout from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
-import { SAMPLE_PAINTINGS } from "@/types/painting";
+import { Painting } from "@/types/painting";
+
+const STRAPI_BASE = import.meta.env.VITE_STRAPI_URL ?? "http://localhost:1337";
 
 const PaintingDetail = () => {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
 
-  const painting = SAMPLE_PAINTINGS.find((p) => p.Slug === slug);
+  const [painting, setPainting] = useState<Painting | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
-  if (!painting) {
+  useEffect(() => {
+    const fetchPainting = async () => {
+      try {
+        const res = await fetch(
+          `${STRAPI_BASE}/api/paintings?filters[Slug][$eq]=${slug}&populate=*`
+        );
+
+        if (!res.ok) {
+          console.error("Strapi fetch failed:", res.status, res.statusText);
+          setError(true);
+          return;
+        }
+
+        const json = await res.json();
+        const found = json.data?.[0] ?? null;
+        setPainting(found);
+      } catch (err) {
+        console.error("Error fetching painting from Strapi:", err);
+        setError(true);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPainting();
+  }, [slug]);
+
+  const imageUrl = painting?.Image?.url.startsWith("http")
+    ? painting.Image.url
+    : `${STRAPI_BASE}${painting?.Image?.url}`;
+
+  if (loading) {
+    return (
+      <Layout>
+        <div className="min-h-screen flex items-center justify-center pt-24">
+          <p className="text-muted-foreground">Loading painting...</p>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (error || !painting) {
     return (
       <Layout>
         <div className="min-h-screen flex items-center justify-center pt-24">
@@ -50,7 +96,7 @@ const PaintingDetail = () => {
             <div className="relative group">
               <div className="overflow-hidden rounded-2xl shadow-2xl">
                 <img
-                  src={painting.Image.url}
+                  src={imageUrl}
                   alt={painting.Title}
                   className="w-full h-auto max-h-[70vh] object-contain bg-secondary/10"
                 />

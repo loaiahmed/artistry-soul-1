@@ -5,7 +5,13 @@ interface ArtCardProps {
   painting: Painting;
 }
 
+const STRAPI_BASE = import.meta.env.VITE_STRAPI_URL ?? "http://localhost:1337";
+
 const ArtCard = ({ painting }: ArtCardProps) => {
+  const imageUrl = painting.Image.url.startsWith("http")
+    ? painting.Image.url
+    : `${STRAPI_BASE}${painting.Image.url}`;
+
   return (
     <Link
       to={`/gallery/${painting.Slug}`}
@@ -13,7 +19,7 @@ const ArtCard = ({ painting }: ArtCardProps) => {
     >
       <div className="relative overflow-hidden aspect-[4/5]">
         <img
-          src={painting.Image.url}
+          src={imageUrl}
           alt={painting.Title}
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
         />

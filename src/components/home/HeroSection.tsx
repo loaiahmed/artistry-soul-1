@@ -1,17 +1,53 @@
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import heroImage from "@/assets/hero-abstract.jpg";
 
+const STRAPI_BASE = import.meta.env.VITE_STRAPI_URL ?? "http://localhost:1337";
+
+interface HomePageData {
+  title: string;
+  description: string;
+  featured_art: {
+    url: string;
+  };
+}
+
 const HeroSection = () => {
   const navigate = useNavigate();
+  const [data, setData] = useState<HomePageData | null>(null);
+
+  useEffect(() => {
+    const fetchHeroData = async () => {
+      try {
+        const res = await fetch(`${STRAPI_BASE}/api/home-page?populate=featured_art`);
+        if (!res.ok) {
+          console.error("Strapi fetch failed:", res.status, res.statusText);
+          return;
+        }
+        const json = await res.json();
+        setData(json.data);
+      } catch (err) {
+        console.error("Error fetching hero data from Strapi:", err);
+      }
+    };
+
+    fetchHeroData();
+  }, []);
+
+  const bgImage = data?.featured_art?.url
+    ? data.featured_art.url.startsWith("http")
+      ? data.featured_art.url
+      : `${STRAPI_BASE}${data.featured_art.url}`
+    : heroImage;
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background Image */}
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: `url(${heroImage})` }}
+        style={{ backgroundImage: `url(${bgImage})` }}
       />
 
       {/* Gradient Overlay */}
@@ -30,10 +66,10 @@ const HeroSection = () => {
             Welcome to
           </p>
           <h1 className="font-serif text-5xl md:text-7xl lg:text-8xl font-bold text-foreground mb-6 leading-tight">
-            Artistry Soul
+            {data?.title ?? "Artistry Soul"}
           </h1>
           <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 font-serif italic">
-            Exploring nature, memory, and light through vibrant oil and acrylics.
+            {data?.description ?? "Exploring nature, memory, and light through vibrant oil and acrylics."}
           </p>
           <Button
             size="lg"

@@ -1,9 +1,35 @@
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Painting } from "@/types/painting";
 import Slideshow from "./Slideshow";
 
+const STRAPI_BASE = import.meta.env.VITE_STRAPI_URL ?? "http://localhost:1337";
+
 const GalleryPreview = () => {
+  const [paintings, setPaintings] = useState<Painting[]>([]);
+
+  useEffect(() => {
+    const fetchPaintings = async () => {
+      try {
+        const res = await fetch(
+          `${STRAPI_BASE}/api/paintings?populate=Image&pagination[limit]=5`
+        );
+        if (!res.ok) {
+          console.error("Strapi fetch failed:", res.status, res.statusText);
+          return;
+        }
+        const json = await res.json();
+        setPaintings(json.data ?? []);
+      } catch (err) {
+        console.error("Error fetching slideshow paintings:", err);
+      }
+    };
+
+    fetchPaintings();
+  }, []);
+
   return (
     <section className="py-24 bg-card">
       <div className="container mx-auto px-6">
@@ -17,7 +43,7 @@ const GalleryPreview = () => {
           <div className="w-24 h-1 bg-primary mx-auto rounded-full" />
         </div>
 
-        <Slideshow />
+        <Slideshow paintings={paintings} />
 
         <div className="text-center mt-12">
           <Button

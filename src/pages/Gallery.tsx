@@ -1,8 +1,39 @@
+import { useState, useEffect } from "react";
 import Layout from "@/components/layout/Layout";
 import ArtCard from "@/components/gallery/ArtCard";
-import { SAMPLE_PAINTINGS } from "@/types/painting";
+import { Painting } from "@/types/painting";
+
+const STRAPI_BASE = import.meta.env.VITE_STRAPI_URL ?? "http://localhost:1337";
 
 const Gallery = () => {
+  const [paintings, setPaintings] = useState<Painting[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    const fetchPaintings = async () => {
+      try {
+        const res = await fetch(`${STRAPI_BASE}/api/paintings?populate=*`);
+
+        if (!res.ok) {
+          console.error("Strapi fetch failed:", res.status, res.statusText);
+          setError(true);
+          return;
+        }
+
+        const json = await res.json();
+        setPaintings(json.data ?? []);
+      } catch (err) {
+        console.error("Error fetching paintings from Strapi:", err);
+        setError(true);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPaintings();
+  }, []);
+
   return (
     <Layout>
       {/* Hero Section */}
@@ -25,11 +56,23 @@ const Gallery = () => {
       {/* Gallery Grid */}
       <section className="py-16 bg-background">
         <div className="container mx-auto px-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {SAMPLE_PAINTINGS.map((painting) => (
-              <ArtCard key={painting.id} painting={painting} />
-            ))}
-          </div>
+          {loading ? (
+            <p className="text-center text-muted-foreground py-20">Loading paintings...</p>
+          ) : error ? (
+            <p className="text-center text-destructive py-20">
+              Failed to load paintings. Make sure Strapi is running.
+            </p>
+          ) : paintings.length === 0 ? (
+            <p className="text-center text-muted-foreground py-20">
+              No paintings found.
+            </p>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+              {paintings.map((painting) => (
+                <ArtCard key={painting.id} painting={painting} />
+              ))}
+            </div>
+          )}
         </div>
       </section>
     </Layout>
