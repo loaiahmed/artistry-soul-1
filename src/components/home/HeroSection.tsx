@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -9,32 +8,15 @@ const STRAPI_BASE = import.meta.env.VITE_STRAPI_URL ?? "http://localhost:1337";
 interface HomePageData {
   title: string;
   description: string;
-  featured_art: {
-    url: string;
-  };
+  featured_art: { url: string };
 }
 
-const HeroSection = () => {
+interface HeroSectionProps {
+  data: HomePageData | null;
+}
+
+const HeroSection = ({ data }: HeroSectionProps) => {
   const navigate = useNavigate();
-  const [data, setData] = useState<HomePageData | null>(null);
-
-  useEffect(() => {
-    const fetchHeroData = async () => {
-      try {
-        const res = await fetch(`${STRAPI_BASE}/api/home-page?populate=featured_art`);
-        if (!res.ok) {
-          console.error("Strapi fetch failed:", res.status, res.statusText);
-          return;
-        }
-        const json = await res.json();
-        setData(json.data);
-      } catch (err) {
-        console.error("Error fetching hero data from Strapi:", err);
-      }
-    };
-
-    fetchHeroData();
-  }, []);
 
   const bgImage = data?.featured_art?.url
     ? data.featured_art.url.startsWith("http")
@@ -92,4 +74,4 @@ const HeroSection = () => {
   );
 };
 
-export default HeroSection;
+export default HeroSection; 

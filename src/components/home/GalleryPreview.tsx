@@ -1,34 +1,14 @@
-import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Painting } from "@/types/painting";
 import Slideshow from "./Slideshow";
 
-const STRAPI_BASE = import.meta.env.VITE_STRAPI_URL ?? "http://localhost:1337";
+interface GalleryPreviewProps {
+  paintings: Painting[];
+}
 
-const GalleryPreview = () => {
-  const [paintings, setPaintings] = useState<Painting[]>([]);
-
-  useEffect(() => {
-    const fetchPaintings = async () => {
-      try {
-        const res = await fetch(
-          `${STRAPI_BASE}/api/paintings?populate=Image&pagination[limit]=5`
-        );
-        if (!res.ok) {
-          console.error("Strapi fetch failed:", res.status, res.statusText);
-          return;
-        }
-        const json = await res.json();
-        setPaintings(json.data ?? []);
-      } catch (err) {
-        console.error("Error fetching slideshow paintings:", err);
-      }
-    };
-
-    fetchPaintings();
-  }, []);
+const GalleryPreview = ({ paintings }: GalleryPreviewProps) => {
 
   return (
     <section className="py-24 bg-card">
